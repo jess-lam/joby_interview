@@ -61,7 +61,7 @@ cp .env.example .env
 # Edit .env with your API URL
 
 # Start the development server
-npm run dev - start the server
+npm run dev
 ```
 
 Frontend will be available at `http://localhost:5173` (or the port Vite assigns)
@@ -86,14 +86,12 @@ Frontend will be available at `http://localhost:5173` (or the port Vite assigns)
 ```bash
 cd backend
 
-# Create a new migration
-alembic revision --autogenerate -m "description"
+# Start virtual env
+source venv/bin/activate
 
 # Apply migrations
 alembic upgrade head
 
-# Rollback migration
-alembic downgrade -1
 ```
 
 ## Testing

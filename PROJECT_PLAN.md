@@ -23,10 +23,10 @@ Build a full-stack issue tracker application where users can create, view, updat
 **Table: `issues`**
 - `id` (Integer, Primary Key, Auto-increment)
 - `title` (String, Required, Max length ~200 chars)
-- `description` (Text, Required)
-- `status` (String, Enum: "open" | "closed", Default: "open")
+- `description` (String, Required, Max length ~5000 chars)
+- `status` (Enum: "open" | "closed", Default: "open")
 - `created_at` (Integer, Unix timestamp, Required)
-- `updated_at` (Integer, Unix timestamp, Optional, for tracking updates)
+- `updated_at` (Integer, Unix timestamp, Required, for tracking updates)
 
 **Indexes:**
 - Primary index on `id` (automatic)
