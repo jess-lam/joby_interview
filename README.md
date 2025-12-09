@@ -94,6 +94,42 @@ alembic upgrade head
 
 ```
 
+## Seeding the Database
+
+To populate the database with dummy data (100 issues):
+
+```bash
+cd backend
+
+# Activate virtual environment (if not already active)
+source venv/bin/activate
+
+# Run the seed script
+python alembic/seeds/seed_issues.py
+```
+
+**Expected output:**
+```
+Starting seed process...
+Executing seed SQL...
+✅ Successfully seeded issues!
+
+Summary:
+  closed: 33 issues
+  open: 67 issues
+```
+
+**What the seed script does:**
+- Generates 100 issues with varied titles, descriptions, and statuses
+- Creates timestamps spread over the past 60 days
+- Approximately 70% open issues, 30% closed issues
+- Shows a summary of created issues by status
+
+**Note:** 
+- The seed script uses a SQL file (`backend/alembic/seeds/seed_issues.sql`) wrapped in a transaction, so all inserts are atomic
+- If any error occurs, the transaction will be rolled back automatically
+- Make sure your database migrations are up to date (`alembic upgrade head`) before running the seed script
+
 ## Testing
 
 ### Backend
