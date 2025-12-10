@@ -1,5 +1,5 @@
-from pydantic import Field, field_validator
-from typing import Optional
+from pydantic import BaseModel, Field, field_validator
+from typing import Optional, List
 from app.schemas.base import BaseSchema, TimestampSchema
 from app.models.issue import IssueStatus
 
@@ -81,3 +81,11 @@ class IssueResponse(IssueBase, TimestampSchema):
     
     class Config:
         from_attributes = True
+
+
+class PaginatedIssueResponse(BaseModel):
+    items: List[IssueResponse]
+    total: int
+    page: int
+    per_page: int
+    total_pages: int
