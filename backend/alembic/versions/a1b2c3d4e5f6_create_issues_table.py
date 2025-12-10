@@ -1,6 +1,5 @@
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
 revision = 'a1b2c3d4e5f6'
 down_revision = '1fb8772f4392'
@@ -9,14 +8,12 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.execute("CREATE TYPE issue_status AS ENUM ('open', 'closed')")
-    
     op.create_table(
         'issues',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('title', sa.String(length=200), nullable=False),
         sa.Column('description', sa.String(length=5000), nullable=False),
-        sa.Column('status', postgresql.ENUM('open', 'closed', name='issue_status', create_type=False), nullable=False, server_default='open'),
+        sa.Column('status', sa.Enum('open', 'closed', name='issue_status', native_enum=True), nullable=False, server_default='open'),
         sa.Column('created_at', sa.Integer(), nullable=False, server_default=sa.text("EXTRACT(EPOCH FROM NOW())::INTEGER")),
         sa.Column('updated_at', sa.Integer(), nullable=False, server_default=sa.text("EXTRACT(EPOCH FROM NOW())::INTEGER")),
         sa.PrimaryKeyConstraint('id')
