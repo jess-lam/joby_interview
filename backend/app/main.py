@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import engine, Base
+from app.api.v1.endpoints import issues
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -21,12 +22,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-@app.get("/")
-async def root():
-    return {"message": "Welcome to Joby Interview API"}
-
-
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy"}
+app.include_router(
+    issues.router,
+    prefix="/api/v1",
+)
