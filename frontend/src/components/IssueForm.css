@@ -1,0 +1,11 @@
+.issue-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .issue-form {
+    gap: 1.25rem;
+  }
+}
