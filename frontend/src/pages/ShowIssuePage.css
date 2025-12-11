@@ -1,0 +1,153 @@
+.show-issue-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.show-issue-page__title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #f0f0f0;
+  margin-bottom: 2rem;
+}
+
+.show-issue-page__content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.show-issue-page__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.show-issue-page__label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #f0f0f0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.show-issue-page__value {
+  font-size: 1rem;
+  color: #1f2937;
+  padding: 0.75rem;
+  background-color: #f9fafb;
+  border-radius: 0.375rem;
+  border: 1px solid #e5e7eb;
+}
+
+.show-issue-page__value--multiline {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  min-height: 100px;
+  line-height: 1.6;
+}
+
+.show-issue-page__status {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.show-issue-page__status--open {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.show-issue-page__status--closed {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+.show-issue-page__actions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.show-issue-page__back-btn,
+.show-issue-page__edit-btn,
+.show-issue-page__delete-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, opacity 0.2s;
+  border: 1px solid;
+}
+
+.show-issue-page__back-btn {
+  background-color: #ffffff;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+.show-issue-page__back-btn:hover:not(:disabled) {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.show-issue-page__edit-btn {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  color: #ffffff;
+}
+
+.show-issue-page__edit-btn:hover:not(:disabled) {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.show-issue-page__delete-btn {
+  background-color: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+.show-issue-page__delete-btn:hover:not(:disabled) {
+  background-color: #b91c1c;
+  border-color: #b91c1c;
+}
+
+.show-issue-page__back-btn:disabled,
+.show-issue-page__edit-btn:disabled,
+.show-issue-page__delete-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .show-issue-page {
+    padding: 1rem;
+  }
+
+  .show-issue-page__title {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .show-issue-page__content {
+    gap: 1.25rem;
+  }
+
+  .show-issue-page__actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .show-issue-page__back-btn,
+  .show-issue-page__edit-btn,
+  .show-issue-page__delete-btn {
+    width: 100%;
+  }
+}
