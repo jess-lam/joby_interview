@@ -30,15 +30,3 @@ class Issue(BaseModel):
         nullable=False, 
         server_default='open'
     )
-
-    @classmethod
-    def open(cls, db):
-        return db.query(cls).filter(cls.status == IssueStatus.OPEN)
-    
-    @classmethod
-    def closed(cls, db):
-        return db.query(cls).filter(cls.status == IssueStatus.CLOSED)
-    
-    @classmethod
-    def recent(cls, db):
-        return db.query(cls).order_by(cls.created_at.desc())
