@@ -2,7 +2,6 @@ from sqlalchemy import Column, String, Enum
 from app.models.base import BaseModel
 import enum
 
-
 class IssueStatus(enum.Enum):
     OPEN = "open"
     CLOSED = "closed"
