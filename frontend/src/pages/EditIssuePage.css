@@ -1,0 +1,83 @@
+.edit-issue-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.edit-issue-page__title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #f0f0f0;
+  margin-bottom: 2rem;
+}
+
+.edit-issue-page__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.edit-issue-page__cancel-btn,
+.edit-issue-page__save-btn,
+.edit-issue-page__back-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, opacity 0.2s;
+  border: 1px solid;
+}
+
+.edit-issue-page__cancel-btn,
+.edit-issue-page__back-btn {
+  background-color: #ffffff;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+.edit-issue-page__cancel-btn:hover:not(:disabled),
+.edit-issue-page__back-btn:hover:not(:disabled) {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.edit-issue-page__save-btn {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  color: #ffffff;
+}
+
+.edit-issue-page__save-btn:hover:not(:disabled) {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.edit-issue-page__cancel-btn:disabled,
+.edit-issue-page__save-btn:disabled,
+.edit-issue-page__back-btn:disabled {
+  opacity: 0.6;
+}
+
+@media (max-width: 640px) {
+  .edit-issue-page {
+    padding: 1rem;
+  }
+
+  .edit-issue-page__title {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .edit-issue-page__actions {
+    flex-direction: column-reverse;
+    gap: 0.75rem;
+  }
+
+  .edit-issue-page__cancel-btn,
+  .edit-issue-page__save-btn,
+  .edit-issue-page__back-btn {
+    width: 100%;
+  }
+}
