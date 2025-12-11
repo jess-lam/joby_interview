@@ -1,0 +1,38 @@
+.issue-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.issue-filters__group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.issue-filters__label {
+  font-weight: 500;
+  color: #f0f0f0;
+}
+
+.issue-filters__select {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #1f2937;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.issue-filters__select:hover {
+  border-color: #999;
+}
+
+.issue-filters__select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}

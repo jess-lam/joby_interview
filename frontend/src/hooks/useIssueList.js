@@ -48,10 +48,14 @@ export const useIssueList = () => {
     setError(null)
     
     try {
+      const page = options.page !== undefined ? options.page : pagination.page
+      const statusFilter = options.statusFilter !== undefined ? options.statusFilter : filters.statusFilter
+      const sort = options.sort !== undefined ? options.sort : filters.sort
+      
       const params = {
-        page: options.page ?? pagination.page,
-        statusFilter: options.statusFilter ?? filters.statusFilter,
-        sort: options.sort ?? filters.sort,
+        page,
+        statusFilter,
+        sort,
       }
       
       const data = await issuesService.getIssues(params)

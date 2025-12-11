@@ -1,0 +1,68 @@
+.issue-card {
+  padding: 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: white;
+}
+
+.issue-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-color: #007bff;
+}
+
+.issue-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 0.5rem;
+  gap: 1rem;
+}
+
+.issue-card__title {
+  margin: 0;
+  flex: 1;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.issue-card__status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.issue-card__status--open {
+  background: #d4edda;
+  color: #155724;
+}
+
+.issue-card__status--closed {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.issue-card__description {
+  color: #666;
+  margin: 0.5rem 0;
+  line-height: 1.5;
+}
+
+.issue-card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+  font-size: 0.85rem;
+  color: #999;
+}
+
+.issue-card__id {
+  font-weight: 500;
+}

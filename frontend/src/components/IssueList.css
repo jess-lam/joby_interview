@@ -1,0 +1,11 @@
+.issue-list {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.issue-list__empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #666;
+}
