@@ -17,6 +17,12 @@ export const useIssueForm = (initialValues = {}) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   
+  const [originalValues, setOriginalValues] = useState({
+    title: initialValues.title || '',
+    description: initialValues.description || '',
+    status: initialValues.status || 'open'
+  })
+  
   const [formValues, setFormValues] = useState({
     title: initialValues.title || '',
     description: initialValues.description || '',
@@ -40,6 +46,25 @@ export const useIssueForm = (initialValues = {}) => {
       status: null
     })
   }, [])
+
+    /**
+   * Handle field value change
+   * @param {string} field - Field name ('title', 'description', or 'status')
+   * @param {string} value - New field value
+   */
+    const handleFieldChange = useCallback((field, value) => {
+      setFormValues(prev => ({
+        ...prev,
+        [field]: value
+      }))
+  
+      if (fieldErrors[field]) {
+        setFieldErrors(prev => ({
+          ...prev,
+          [field]: null
+        }))
+      }
+    }, [fieldErrors])
 
   /**
    * Map backend validation errors to field errors
@@ -72,25 +97,6 @@ export const useIssueForm = (initialValues = {}) => {
 
     setFieldErrors(errors)
   }, [])
-
-  /**
-   * Handle field value change
-   * @param {string} field - Field name ('title', 'description', or 'status')
-   * @param {string} value - New field value
-   */
-  const handleFieldChange = useCallback((field, value) => {
-    setFormValues(prev => ({
-      ...prev,
-      [field]: value
-    }))
-
-    if (fieldErrors[field]) {
-      setFieldErrors(prev => ({
-        ...prev,
-        [field]: null
-      }))
-    }
-  }, [fieldErrors])
 
   /**
    * Create an issue
@@ -147,13 +153,13 @@ export const useIssueForm = (initialValues = {}) => {
     try {
       const issueData = {}
       
-      if (formValues.title !== initialValues.title) {
+      if (formValues.title !== originalValues.title) {
         issueData.title = formValues.title.trim()
       }
-      if (formValues.description !== initialValues.description) {
+      if (formValues.description !== originalValues.description) {
         issueData.description = formValues.description.trim()
       }
-      if (formValues.status !== initialValues.status) {
+      if (formValues.status !== originalValues.status) {
         issueData.status = formValues.status
       }
 
@@ -181,34 +187,24 @@ export const useIssueForm = (initialValues = {}) => {
     } finally {
       setLoading(false)
     }
-  }, [formValues, initialValues, clearFieldErrors, mapBackendErrorsToFields])
-
-  const resetForm = useCallback(() => {
-    setFormValues({
-      title: initialValues.title || '',
-      description: initialValues.description || '',
-      status: initialValues.status || 'open'
-    })
-    setFieldErrors({
-      title: null,
-      description: null,
-      status: null
-    })
-    setError(null)
-  }, [initialValues])
+  }, [formValues, originalValues, clearFieldErrors, mapBackendErrorsToFields])
 
   /**
    * Initialize form values from new data
    * Clears all errors and resets form to the provided values
+   * Also updates originalValues for change detection
    */
   const initializeFromValues = useCallback((newValues) => {
     if (!newValues) return
     
-    setFormValues({
+    const values = {
       title: newValues.title || '',
       description: newValues.description || '',
       status: newValues.status || 'open'
-    })
+    }
+    
+    setOriginalValues(values)
+    setFormValues(values)
     setFieldErrors({
       title: null,
       description: null,
@@ -229,7 +225,6 @@ export const useIssueForm = (initialValues = {}) => {
     handleCreate,
     handleUpdate,
     clearError,
-    resetForm,
     initializeFromValues,
   }
 }
