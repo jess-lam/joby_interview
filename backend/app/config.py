@@ -1,10 +1,13 @@
 from pydantic_settings import BaseSettings
 from pydantic import field_validator
-from typing import List, Union
+from typing import List, Union, Optional
 
 class Settings(BaseSettings):
     # Database
     DATABASE_URL: str
+    
+    # Test Database (optional, falls back to modifying DATABASE_URL)
+    TEST_DATABASE_URL: Optional[str] = None
     
     # CORS - can be comma-separated string or list
     CORS_ORIGINS: Union[str, List[str]] = "http://localhost:5173,http://localhost:3000"
