@@ -12,8 +12,8 @@ const IssueFilters = ({ statusFilter, sort, onStatusFilterChange, onSortChange }
         <select
           id="status-filter"
           className="issue-filters__select"
-          value={statusFilter || ''}
-          onChange={(e) => onStatusFilterChange(e.target.value || null)}
+          value={statusFilter}
+          onChange={(e) => onStatusFilterChange(e.target.value)}
         >
           {STATUS_FILTER_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>

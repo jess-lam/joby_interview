@@ -54,20 +54,6 @@ const getVisiblePageNumbers = (currentPage, totalPages, maxVisible) => {
 }
 
 // ============================================================================
-// BOUNDARY CONDITION HELPERS
-// ============================================================================
-
-const shouldShowLeadingPageOne = (firstVisiblePage) => firstVisiblePage > 1
-
-const shouldShowLeadingEllipsis = (firstVisiblePage) => firstVisiblePage > 2
-
-const shouldShowTrailingLastPage = (lastVisiblePage, totalPages) => 
-  lastVisiblePage < totalPages
-
-const shouldShowTrailingEllipsis = (lastVisiblePage, totalPages) => 
-  lastVisiblePage < totalPages - 1
-
-// ============================================================================
 // REUSABLE COMPONENTS
 // ============================================================================
 
@@ -93,10 +79,6 @@ const PageNumberButton = ({ page, isActive, onPageChange }) => (
   </button>
 )
 
-const Ellipsis = () => (
-  <span className="pagination__ellipsis">...</span>
-)
-
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
@@ -106,14 +88,12 @@ const Pagination = ({
   totalPages, 
   onPageChange,
   showFirstLast = true,
-  maxVisible = 5 
+  maxVisible = 5
 }) => {
 
   if (totalPages <= 1) return null
 
   const visiblePages = getVisiblePageNumbers(currentPage, totalPages, maxVisible)
-  const firstVisiblePage = visiblePages[0]
-  const lastVisiblePage = visiblePages[visiblePages.length - 1]
   const isFirstPage = currentPage === 1
   const isLastPage = currentPage === totalPages
   
@@ -137,17 +117,6 @@ const Pagination = ({
         «
       </NavigationButton>
 
-      {shouldShowLeadingPageOne(firstVisiblePage) && (
-        <>
-          <PageNumberButton 
-            page={1} 
-            isActive={false} 
-            onPageChange={onPageChange} 
-          />
-          {shouldShowLeadingEllipsis(firstVisiblePage) && <Ellipsis />}
-        </>
-      )}
-
       {visiblePages.map((page) => (
         <PageNumberButton
           key={page}
@@ -156,17 +125,6 @@ const Pagination = ({
           onPageChange={onPageChange}
         />
       ))}
-
-      {shouldShowTrailingLastPage(lastVisiblePage, totalPages) && (
-        <>
-          {shouldShowTrailingEllipsis(lastVisiblePage, totalPages) && <Ellipsis />}
-          <PageNumberButton 
-            page={totalPages} 
-            isActive={false} 
-            onPageChange={onPageChange} 
-          />
-        </>
-      )}
 
       <NavigationButton
         onClick={() => onPageChange(currentPage + 1)}

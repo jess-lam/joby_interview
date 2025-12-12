@@ -75,7 +75,7 @@ const IssueListPage = () => {
 
       <IssueList issues={issues} />
 
-      {issues.length > 0 && (
+      {pagination.total_pages > 1 && (
         <>
           <Pagination
             currentPage={pagination.page}

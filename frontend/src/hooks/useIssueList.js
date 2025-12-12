@@ -26,7 +26,7 @@ export const useIssueList = () => {
   })
   
   const [filters, setFilters] = useState({
-    statusFilter: null,
+    statusFilter: '',
     sort: 'desc'
   })
 
@@ -85,7 +85,7 @@ export const useIssueList = () => {
 
   useEffect(() => {
     const page = parseInt(searchParams.get('page') || '1', 10)
-    const statusFilter = searchParams.get('status_filter') || null
+    const statusFilter = searchParams.get('status_filter') || ''
     const sort = searchParams.get('sort') || 'desc'
     
     fetchIssues({ page, statusFilter, sort })

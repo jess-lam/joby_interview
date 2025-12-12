@@ -36,9 +36,3 @@
   border-color: #007bff;
   font-weight: bold;
 }
-
-.pagination__ellipsis {
-  padding: 0.5rem;
-  color: #666;
-  user-select: none;
-}

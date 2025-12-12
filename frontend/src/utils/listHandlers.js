@@ -1,5 +1,5 @@
 /**
- * Reusable paginated list hanlder functions
+ * Reusable paginated list handler functions
  */
 
 /**
@@ -15,7 +15,7 @@ export const handlePageChange = (fetchList, newPage) => {
 /**
  * Handle status filter change
  * @param {Function} fetchList - The fetchList function (from hook or component)
- * @param {string|null} statusFilter - status filter value
+ * @param {string} statusFilter - status filter value ('open', 'closed', or '' for all)
  */
 export const handleStatusFilterChange = (fetchList, statusFilter) => {
   fetchList({ 

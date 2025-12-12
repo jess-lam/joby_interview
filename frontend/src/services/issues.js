@@ -3,12 +3,12 @@ import api from './api'
 /**
  * Get paginated list of issues
  * @param {Object} params - Query parameters
- * @param {string|null} params.statusFilter - Filter by status ('open' or 'closed')
+ * @param {string} params.statusFilter - Filter by status ('open', 'closed', or '' for all)
  * @param {string} params.sort - Sort by 'asc' or 'desc' (default: 'desc')
  * @param {number} params.page - Page number (default: 1)
  * @returns {Promise<Object>} Paginated response with items, total, page, per_page, total_pages
  */
-export const getIssues = async ({ statusFilter = null, sort = 'desc', page = 1 } = {}) => {
+export const getIssues = async ({ statusFilter = '', sort = 'desc', page = 1 } = {}) => {
   const params = {
     sort,
     page,
