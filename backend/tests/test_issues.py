@@ -140,7 +140,7 @@ def test_create_issue_missing_title(client):
             "description": "Description only"
         }
     )
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 def test_create_issue_missing_description(client):
     response = client.post(
@@ -149,7 +149,7 @@ def test_create_issue_missing_description(client):
             "title": "Title only"
         }
     )
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 def test_create_issue_whitespace_stripped(client):
     response = client.post(
@@ -173,7 +173,7 @@ def test_create_issue_title_too_long(client):
             "description": "Description"
         }
     )
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 # ==================== GET ISSUE (GET /api/v1/issues/{id}) ====================
 

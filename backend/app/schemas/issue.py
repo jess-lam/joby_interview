@@ -78,10 +78,6 @@ class IssueResponse(IssueBase, TimestampSchema):
     status: IssueStatus
     created_at: int
     updated_at: int
-    
-    class Config:
-        from_attributes = True
-
 
 class PaginatedIssueResponse(BaseModel):
     items: List[IssueResponse]

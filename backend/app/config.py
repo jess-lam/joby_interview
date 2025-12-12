@@ -1,8 +1,13 @@
 from pydantic_settings import BaseSettings
-from pydantic import field_validator
+from pydantic import field_validator, ConfigDict
 from typing import List, Union, Optional
 
 class Settings(BaseSettings):
+    model_config = ConfigDict(
+        env_file=".env",
+        case_sensitive=True
+    )
+    
     # Database
     DATABASE_URL: str
     
@@ -21,10 +26,5 @@ class Settings(BaseSettings):
     
     # Environment
     ENVIRONMENT: str = "development"
-    
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
-
 
 settings = Settings()
