@@ -1,4 +1,4 @@
-import React from 'react'
+import PropTypes from 'prop-types'
 import TextField from './formFields/TextField'
 import TextAreaField from './formFields/TextAreaField'
 import SelectField from './formFields/SelectField'
@@ -49,6 +49,21 @@ const IssueForm = ({ values, onChange, errors, isSubmitting = false }) => {
       />
     </form>
   )
+}
+
+IssueForm.propTypes = {
+  values: PropTypes.shape({
+    title: PropTypes.string,
+    description: PropTypes.string,
+    status: PropTypes.string
+  }).isRequired,
+  onChange: PropTypes.func.isRequired,
+  errors: PropTypes.shape({
+    title: PropTypes.string,
+    description: PropTypes.string,
+    status: PropTypes.string
+  }).isRequired,
+  isSubmitting: PropTypes.bool
 }
 
 export default IssueForm

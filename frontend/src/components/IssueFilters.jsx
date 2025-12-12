@@ -1,4 +1,4 @@
-import React from 'react'
+import PropTypes from 'prop-types'
 import { STATUS_FILTER_OPTIONS, SORT_OPTIONS } from '../utils/constants'
 import './IssueFilters.css'
 
@@ -42,6 +42,13 @@ const IssueFilters = ({ statusFilter, sort, onStatusFilterChange, onSortChange }
       </div>
     </div>
   )
+}
+
+IssueFilters.propTypes = {
+  statusFilter: PropTypes.string.isRequired,
+  sort: PropTypes.string.isRequired,
+  onStatusFilterChange: PropTypes.func.isRequired,
+  onSortChange: PropTypes.func.isRequired
 }
 
 export default IssueFilters

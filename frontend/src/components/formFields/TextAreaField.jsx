@@ -1,4 +1,4 @@
-import React from 'react'
+import PropTypes from 'prop-types'
 import './TextAreaField.css'
 
 const TextAreaField = ({
@@ -48,6 +48,19 @@ const TextAreaField = ({
       )}
     </div>
   )
+}
+
+TextAreaField.propTypes = {
+  id: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  error: PropTypes.string,
+  required: PropTypes.bool,
+  disabled: PropTypes.bool,
+  placeholder: PropTypes.string,
+  rows: PropTypes.number,
+  maxLength: PropTypes.number
 }
 
 export default TextAreaField

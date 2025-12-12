@@ -89,7 +89,7 @@ export const useIssueForm = (initialValues = {}) => {
     if (Array.isArray(backendErrors)) {
       backendErrors.forEach(error => {
         const field = error.loc?.[1]
-        if (field && errors.hasOwnProperty(field)) {
+        if (field && Object.prototype.hasOwnProperty.call(errors, field)) {
           errors[field] = error.msg || 'Invalid value'
         }
       })

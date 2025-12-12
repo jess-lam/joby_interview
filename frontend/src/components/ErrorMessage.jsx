@@ -1,4 +1,4 @@
-import React from 'react'
+import PropTypes from 'prop-types'
 import './ErrorMessage.css'
 
 const ErrorMessage = ({ message, onDismiss }) => {
@@ -18,6 +18,11 @@ const ErrorMessage = ({ message, onDismiss }) => {
       )}
     </div>
   )
+}
+
+ErrorMessage.propTypes = {
+  message: PropTypes.string,
+  onDismiss: PropTypes.func
 }
 
 export default ErrorMessage

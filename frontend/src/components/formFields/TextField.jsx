@@ -1,4 +1,4 @@
-import React from 'react'
+import PropTypes from 'prop-types'
 import './TextField.css'
 
 const TextField = ({
@@ -47,6 +47,18 @@ const TextField = ({
       )}
     </div>
   )
+}
+
+TextField.propTypes = {
+  id: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  error: PropTypes.string,
+  required: PropTypes.bool,
+  disabled: PropTypes.bool,
+  placeholder: PropTypes.string,
+  maxLength: PropTypes.number
 }
 
 export default TextField

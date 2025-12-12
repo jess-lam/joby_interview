@@ -1,4 +1,4 @@
-import React from 'react'
+import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
 import { formatDate } from '../utils/dateTimeUtils'
 import './IssueCard.css'
@@ -36,6 +36,16 @@ const IssueCard = ({ issue }) => {
       </div>
     </div>
   )
+}
+
+IssueCard.propTypes = {
+  issue: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    title: PropTypes.string.isRequired,
+    status: PropTypes.string.isRequired,
+    description: PropTypes.string.isRequired,
+    created_at: PropTypes.string.isRequired
+  }).isRequired
 }
 
 export default IssueCard

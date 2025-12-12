@@ -1,4 +1,4 @@
-import React from 'react'
+import PropTypes from 'prop-types'
 import './PaginationInfo.css'
 
 const PaginationInfo = ({ page, perPage, total }) => {
@@ -10,6 +10,12 @@ const PaginationInfo = ({ page, perPage, total }) => {
       Showing {start} to {end} of {total} issues
     </div>
   )
+}
+
+PaginationInfo.propTypes = {
+  page: PropTypes.number.isRequired,
+  perPage: PropTypes.number.isRequired,
+  total: PropTypes.number.isRequired
 }
 
 export default PaginationInfo

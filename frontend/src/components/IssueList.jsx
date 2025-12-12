@@ -1,4 +1,4 @@
-import React from 'react'
+import PropTypes from 'prop-types'
 import IssueCard from './IssueCard'
 import './IssueList.css'
 
@@ -18,6 +18,18 @@ const IssueList = ({ issues }) => {
       ))}
     </div>
   )
+}
+
+IssueList.propTypes = {
+  issues: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      title: PropTypes.string.isRequired,
+      status: PropTypes.string.isRequired,
+      description: PropTypes.string.isRequired,
+      created_at: PropTypes.string.isRequired
+    })
+  ).isRequired
 }
 
 export default IssueList

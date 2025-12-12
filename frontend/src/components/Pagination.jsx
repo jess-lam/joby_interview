@@ -1,4 +1,4 @@
-import React from 'react'
+import PropTypes from 'prop-types'
 import './Pagination.css'
 
 // ============================================================================
@@ -68,6 +68,14 @@ const NavigationButton = ({ onClick, disabled, ariaLabel, children, className = 
   </button>
 )
 
+NavigationButton.propTypes = {
+  onClick: PropTypes.func.isRequired,
+  disabled: PropTypes.bool.isRequired,
+  ariaLabel: PropTypes.string.isRequired,
+  children: PropTypes.node.isRequired,
+  className: PropTypes.string
+}
+
 const PageNumberButton = ({ page, isActive, onPageChange }) => (
   <button
     onClick={() => onPageChange(page)}
@@ -78,6 +86,12 @@ const PageNumberButton = ({ page, isActive, onPageChange }) => (
     {page}
   </button>
 )
+
+PageNumberButton.propTypes = {
+  page: PropTypes.number.isRequired,
+  isActive: PropTypes.bool.isRequired,
+  onPageChange: PropTypes.func.isRequired
+}
 
 // ============================================================================
 // MAIN COMPONENT
@@ -145,6 +159,14 @@ const Pagination = ({
       )}
     </nav>
   )
+}
+
+Pagination.propTypes = {
+  currentPage: PropTypes.number.isRequired,
+  totalPages: PropTypes.number.isRequired,
+  onPageChange: PropTypes.func.isRequired,
+  showFirstLast: PropTypes.bool,
+  maxVisible: PropTypes.number
 }
 
 export default Pagination

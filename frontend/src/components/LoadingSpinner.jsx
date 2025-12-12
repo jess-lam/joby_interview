@@ -1,4 +1,4 @@
-import React from 'react'
+import PropTypes from 'prop-types'
 import './LoadingSpinner.css'
 
 const LoadingSpinner = ({ message = 'Loading...' }) => {
@@ -8,6 +8,10 @@ const LoadingSpinner = ({ message = 'Loading...' }) => {
       {message && <p className="loading-message">{message}</p>}
     </div>
   )
+}
+
+LoadingSpinner.propTypes = {
+  message: PropTypes.string
 }
 
 export default LoadingSpinner
