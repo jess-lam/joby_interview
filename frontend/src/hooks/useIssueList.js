@@ -83,12 +83,15 @@ export const useIssueList = () => {
     }
   }, [pagination.page, filters.statusFilter, filters.sort])
 
+  // Intentionally empty deps: only run on mount to read initial URL params
+  // Adding searchParams/fetchIssues would cause infinite loop with state→URL sync
   useEffect(() => {
     const page = parseInt(searchParams.get('page') || '1', 10)
     const statusFilter = searchParams.get('status_filter') || ''
     const sort = searchParams.get('sort') || 'desc'
     
     fetchIssues({ page, statusFilter, sort })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
