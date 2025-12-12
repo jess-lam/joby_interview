@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import IssueListPage from './pages/IssueListPage'
 import CreateIssuePage from './pages/CreateIssuePage'
 import ShowIssuePage from './pages/ShowIssuePage'
@@ -9,10 +9,12 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<Navigate to="/issues" replace />} />
         <Route path="/issues/new" element={<CreateIssuePage />} />
         <Route path="/issues/:id/edit" element={<EditIssuePage />} />
         <Route path="/issues/:id" element={<ShowIssuePage />} />
         <Route path="/issues" element={<IssueListPage />} />
+        <Route path="*" element={<Navigate to="/issues" replace />} />
       </Routes>
     </BrowserRouter>
   )
