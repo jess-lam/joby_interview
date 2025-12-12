@@ -5,20 +5,6 @@ import enum
 class IssueStatus(enum.Enum):
     OPEN = "open"
     CLOSED = "closed"
-    
-    @property
-    def display_name(self) -> str:
-        return self.name.capitalize()
-    
-    @classmethod
-    def from_string(cls, value: str) -> "IssueStatus":
-        """Convert string to enum, case-insensitive."""
-        value_lower = value.lower()
-        for status in cls:
-            if status.value == value_lower:
-                return status
-        raise ValueError(f"Invalid status: {value}")
-
 
 class Issue(BaseModel):
     __tablename__ = 'issues'

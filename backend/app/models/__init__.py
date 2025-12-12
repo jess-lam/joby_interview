@@ -1,5 +1,5 @@
-from app.models.base import BaseModel
+"""
+Database models package.
 
-__all__ = ["BaseModel"]
-
-
+This package contains SQLAlchemy models for the application.
+"""

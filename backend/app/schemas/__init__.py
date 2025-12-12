@@ -1,5 +1,5 @@
-from app.schemas.base import BaseSchema
+"""
+Pydantic schemas package.
 
-__all__ = ["BaseSchema"]
-
-
+This package contains Pydantic schemas for request/response validation.
+"""
