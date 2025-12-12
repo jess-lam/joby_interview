@@ -27,7 +27,7 @@ IssueList.propTypes = {
       title: PropTypes.string.isRequired,
       status: PropTypes.string.isRequired,
       description: PropTypes.string.isRequired,
-      created_at: PropTypes.string.isRequired
+      created_at: PropTypes.number.isRequired
     })
   ).isRequired
 }
