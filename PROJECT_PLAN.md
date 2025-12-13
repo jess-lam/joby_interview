@@ -12,7 +12,7 @@ Build a full-stack issue tracker application where users can create, view, updat
 - **ORM**: SQLAlchemy
 - **Migrations**: Alembic
 - **API Client**: Axios (already configured)
-- **State Management**: React Context API
+- **State Management**: Custom React Hooks (useIssueList, useIssueForm, useIssueShow)
 
 ---
 
@@ -49,77 +49,113 @@ Build a full-stack issue tracker application where users can create, view, updat
 
 **File**: `backend/app/models/issue.py`
 
-Create SQLAlchemy model:
-- Define `Issue` class inheriting from `Base`
-- Add all required fields with proper types
-- Set default values (status="open", created_at=current_timestamp)
-- Add `__repr__` method for debugging
+**Base Model Architecture:**
+- `BaseModel` (in `app/models/base.py`) provides common fields:
+  - `id`: Integer primary key
+  - `created_at`: Unix timestamp (auto-generated)
+  - `updated_at`: Unix timestamp (auto-generated)
+
+**Issue Model:**
+- Define `Issue` class inheriting from `BaseModel`
+- `title`: String(200), required
+- `description`: String(5000), required
+- `status`: Enum (IssueStatus.OPEN | IssueStatus.CLOSED), default "open"
+- Uses `IssueStatus` enum class for type safety
 
 ### 2.2 Pydantic Schemas
 
 **File**: `backend/app/schemas/issue.py`
 
-Create schemas:
-- `IssueBase`: Base schema with common fields
-- `IssueCreate`: For POST requests (title, description, status optional)
-- `IssueUpdate`: For PATCH/PUT requests (all fields optional)
-- `IssueResponse`: For GET responses (includes id, created_at, all fields)
+**Base Schema Architecture:**
+- `BaseSchema`: Base Pydantic model with `from_attributes=True` for SQLAlchemy ORM
+- `TimestampSchema`: Extends BaseSchema with `created_at` and `updated_at` fields
 
-**Validation Rules:**
-- `title`: Required, min 1 char, max 200 chars
-- `description`: Required, max 5000 chars
-- `status`: Enum validation ("open" | "closed")
-- `created_at`: Auto-generated Unix timestamp if not provided
-- `updated_at`: Auto-generated Unix timestamp if not provided
+**Issue Schemas:**
+- `IssueBase`: Base schema with common fields (title, description, status)
+- `IssueCreate`: For POST requests
+  - `title`: Required, min 1 char, max 200 chars (auto-stripped)
+  - `description`: Required, min 1 char, max 5000 chars (auto-stripped)
+  - `status`: IssueStatus enum, default OPEN
+  - Field validators strip whitespace and reject blank values
+- `IssueUpdate`: For PATCH requests (all fields optional)
+  - Same validation rules as IssueCreate, but all fields optional
+  - Only updates fields that are provided
+- `IssueResponse`: For GET responses
+  - Extends IssueBase and TimestampSchema
+  - Includes `id`, `created_at`, `updated_at`
+- `PaginatedIssueResponse`: For paginated list responses
+  - `items`: List of IssueResponse
+  - `total`, `page`, `per_page`, `total_pages`: Pagination metadata
 
 ### 2.3 API Endpoints
 
 **File**: `backend/app/api/v1/endpoints/issues.py`
 
+**Router Configuration**: 
+- Router defined with `prefix="/issues"` and `tags=["issues"]`
+- When included in main app with `app.include_router(router, prefix="/api/v1")`, final routes will be:
+  - `/api/v1/issues` (GET, POST)
+  - `/api/v1/issues/{issue_id}` (GET, PUT, PATCH, DELETE)
+
 Implement CRUD endpoints:
 
-1. **POST `/api/v1/issues`** - Create new issue
-   - Accept `IssueCreate` schema
-   - Generate `created_at` timestamp
-   - Save to database
-   - Return `IssueResponse`
+1. **GET `/api/v1/issues`** - List all issues (paginated)
+   - Query parameters:
+     - `status_filter` (optional): Filter by status ("open" or "closed")
+     - `sort` (optional, default: "desc"): Sort order ("asc" or "desc")
+     - `page` (optional, default: 1): Page number (starts at 1)
+   - Returns: `PaginatedIssueResponse` with items array and pagination metadata
+   - Error handling: 400 if invalid status_filter value
+   - Pagination: 20 items per page
 
-2. **GET `/api/v1/issues`** - List all issues
-   - Optional query params: `status` (filter by status), `sort` (created_at asc/desc)
-   - Return list of `IssueResponse`
-   - Handle pagination (optional enhancement)
+2. **GET `/api/v1/issues/{issue_id}`** - Get single issue
+   - Path parameter: `issue_id` (integer, auto-validated by FastAPI)
+   - Request body: `IssueCreate` schema (automatically validated)
+   - Returns: `IssueResponse`
+   - Error handling: 404 if issue not found
 
-3. **GET `/api/v1/issues/{issue_id}`** - Get single issue
-   - Validate issue_id exists
-   - Return `IssueResponse` or 404
+3. **POST `/api/v1/issues`** - Create new issue
+   - Request body: `IssueCreate` schema (automatically validated)
+   - Returns: `IssueResponse` with status 201 Created
+   - Redirects back to `/api/v1/issues/{issue_id}`
+   - Validation: Automatic via Pydantic schema (422 if invalid)
+   - Note: No manual validation checks needed - FastAPI handles it
 
-4. **PUT `/api/v1/issues/{issue_id}`** - Update issue (full update)
-   - Accept `IssueUpdate` schema
-   - Validate issue exists
-   - Update all provided fields
-   - Return updated `IssueResponse`
+4. **PATCH `/api/v1/issues/{issue_id}`** - Update issue (partial update)
+   - Path parameter: `issue_id` (integer)
+   - Request body: `IssueUpdate` schema (all fields optional)
+   - Returns: `IssueResponse`
+   - Error handling: 404 if issue not found
+   - Updates only provided fields (exclude_unset=True, exclude_none=True)
+   - Handles database integrity errors with rollback
+
 
 5. **DELETE `/api/v1/issues/{issue_id}`** - Delete issue
-   - Validate issue exists
-   - Delete from database
-   - Return success message or 204 status
+   - Path parameter: `issue_id` (integer)
+   - Redirects back to `/api/v1/issues/{issue_id}`
+   - Error handling: 404 if issue not found
 
 ### 2.4 Error Handling
 
 Implement consistent error handling:
-- 400: Bad Request (validation errors)
-- 404: Not Found (issue doesn't exist)
-- 500: Internal Server Error (database errors)
-- Use FastAPI's HTTPException
-- Return structured error responses
+- **422**: Unprocessable Entity (automatic - Pydantic validation failures)
+- **400**: Bad Request (invalid query parameters, integrity constraint violations)
+- **404**: Not Found (issue doesn't exist)
+- **500**: Internal Server Error (database errors)
+- Use FastAPI's `HTTPException` for manual error responses
+- Pydantic schemas automatically return 422 with detailed validation errors
+- Return structured error responses with `detail` field
+- Logging: Database errors are logged for debugging
+- Transaction management: Proper rollback on database errors
 
 ### 2.5 Router Registration
 
-**File**: `backend/app/api/v1/__init__.py` or `backend/app/main.py`
+**File**: `backend/app/main.py`
 
-- Create router for issues endpoints
+- Create router for issues endpoints with `prefix="/issues"` and `tags=["issues"]` in the endpoints file
 - Include router in main FastAPI app with prefix `/api/v1`
-- Add appropriate tags for API documentation
+- Final routes will be: `/api/v1/issues`, `/api/v1/issues/{issue_id}`, etc.
+- Tags will automatically appear in FastAPI's auto-generated documentation at `/docs`
 
 ### 2.6 Database Session Management
 
@@ -136,104 +172,224 @@ Ensure proper database session handling:
 
 **File**: `frontend/src/services/issues.js`
 
-Create service functions:
-- `getIssues(status, sort)` - Fetch all issues with optional filters
-- `getIssue(id)` - Fetch single issue
-- `createIssue(issueData)` - Create new issue
-- `updateIssue(id, issueData)` - Update issue
-- `deleteIssue(id)` - Delete issue
+Create service functions matching the backend endpoints:
+
+- `getIssues({ statusFilter, sort, page })` - GET `/api/v1/issues`
+  - Query params: `status_filter` (optional), `sort` (optional, default: "desc"), `page` (optional, default: 1)
+  - Returns: Promise resolving to paginated response object with `items`, `total`, `page`, `per_page`, `total_pages`
+
+- `getIssue(id)` - GET `/api/v1/issues/{issue_id}`
+  - Returns: Promise resolving to single issue object
+
+- `createIssue(issueData)` - POST `/api/v1/issues`
+  - Body: `{ title, description, status }`
+  - Returns: Promise resolving to created issue
+
+- `updateIssue(id, issueData)` - PATCH `/api/v1/issues/{issue_id}`
+  - Body: `{ title?, description?, status? }` (all optional)
+  - Returns: Promise resolving to updated issue
+
+- `deleteIssue(id)` - DELETE `/api/v1/issues/{issue_id}`
+  - Returns: Promise resolving to null (204 No Content)
 
 Each function should:
 - Use axios instance from `api.js`
-- Handle errors appropriately
+- Handle errors appropriately (422 validation errors, 404 not found, etc.)
 - Return promises for component use
+- Include proper error messages for user feedback
 
-### 3.2 Context API Setup
+### 3.2 Custom Hooks Architecture
 
-**File**: `frontend/src/context/IssuesContext.jsx`
+**Architecture Decision:** Custom hooks - each hook manages its own localized state and calls services directly.
 
-Create IssuesContext to manage global state:
+#### 3.2.1 useIssueList Hook
+
+**File**: `frontend/src/hooks/useIssueList.js`
+
+**Purpose:** Manage state and logic for the IssueListPage
 
 **State:**
-- `issues`: array of issues
+- `issues`: array of issues (local to this hook)
 - `loading`: boolean for loading state
 - `error`: error message string (null if no error)
-- `editingIssue`: currently editing issue (null or issue object)
+- `pagination`: { page, per_page, total, total_pages }
+- `filters`: { statusFilter, sort }
 
 **Functions:**
-- `fetchIssues(status, sort)` - Load all issues with optional filters
-- `createIssue(issueData)` - Create new issue and refresh list
-- `updateIssue(id, issueData)` - Update existing issue and refresh list
-- `deleteIssue(id)` - Delete issue and refresh list
-- `setEditingIssue(issue)` - Set issue for editing (null to cancel)
+- `fetchIssues(options)` - Fetch issues with filters and pagination
 - `clearError()` - Clear error state
 
-**Implementation:**
-- Use `useState` for state management
-- Use `useEffect` to fetch issues on mount (in provider or App)
-- Use `useCallback` to memoize functions and prevent unnecessary re-renders
-- Export `IssuesProvider` component and `useIssues` custom hook
-- Wrap App component with `IssuesProvider`
+**Features:**
+- URL param synchronization (reads from URL on mount, updates URL on filter/page change)
+- Automatic fetching on mount with URL params
+- Calls `issuesService.getIssues()` directly
+
+#### 3.2.2 useIssueForm Hook
+
+**File**: `frontend/src/hooks/useIssueForm.js`
+
+**Purpose:** Manage form state and validation for CreateIssuePage and EditIssuePage
+
+**State:**
+- `formValues`: { title, description, status }
+- `fieldErrors`: { title, description, status } - validation errors from backend
+- `loading`: boolean for form submission
+- `error`: general error message
+- `hasChanges`: boolean indicating if form values differ from original
+
+**Functions:**
+- `handleFieldChange(field, value)` - Update form field value
+- `handleCreate()` - Create new issue
+- `handleUpdate(id)` - Update existing issue (only sends changed fields)
+- `initializeFromValues(values)` - Initialize form from issue data
+- `clearError()` - Clear error state
+
+**Features:**
+- Backend validation error mapping (422 errors mapped to field errors)
+- Change detection (only sends changed fields on update)
+- Text trimming and validation
+- Calls `issuesService.createIssue()` and `updateIssue()` directly
+
+#### 3.2.3 useIssueShow Hook
+
+**File**: `frontend/src/hooks/useIssueShow.js`
+
+**Purpose:** Manage state for ShowIssuePage
+
+**State:**
+- `issue`: single issue object (null if not loaded)
+- `loading`: boolean for loading state
+- `error`: error message string (null if no error)
+
+**Functions:**
+- `fetchIssue(id)` - Fetch single issue by ID
+- `handleDelete(id)` - Delete issue
+- `clearError()` - Clear error state
+
+**Features:**
+- Calls `issuesService.getIssue()` and `deleteIssue()` directly
 
 ### 3.3 React Components
 
-#### 3.3.1 Issue List Component
+#### 3.3.1 Issue List Page
 
-**File**: `frontend/src/pages/IssueList.jsx`
+**File**: `frontend/src/pages/IssueListPage.jsx`
 
 Features:
-- Use `useIssues()` hook to access context
-- Use `useNavigate()` from react-router-dom for navigation
-- Display list of issues in a table or card layout
-- Show: title, description (truncated), status, created_at (formatted)
-- Access `issues`, `loading`, `error` from context
-- Each issue is clickable → navigates to `/issues/:id/edit` route
+- Uses `useIssueList()` hook for state management
+- Uses `useNavigate()` from react-router-dom for navigation
+- Displays list of issues using `IssueList` component
+- Shows pagination controls and filters
+- Each issue card is clickable → navigates to `/issues/:id` (show page)
 - "Create Issue" button → navigates to `/issues/new` route
 - Empty state when no issues
-- Loading state while fetching
-- Error state if fetch fails
-- Fetch issues on component mount (useEffect)
+- Loading spinner while fetching
+- Error message display
+- URL params sync (filters and pagination preserved in URL)
 
-#### 3.3.2 Issue Form Page
+**Components Used:**
+- `IssueList`: Renders list of issue cards
+- `IssueCard`: Individual issue card component
+- `IssueFilters`: Filter and sort controls
+- `Pagination`: Pagination controls
+- `PaginationInfo`: Pagination metadata display
+- `LoadingSpinner`: Loading indicator
+- `ErrorMessage`: Error display
 
-**File**: `frontend/src/pages/IssueFormPage.jsx`
+#### 3.3.2 Create Issue Page
+
+**File**: `frontend/src/pages/CreateIssuePage.jsx`
 
 Features:
-- Use `useIssues()` hook to access context
-- Use `useParams()` and `useNavigate()` from react-router-dom
-- Get issue ID from route params (`/issues/:id/edit` or `/issues/new`)
-- If route is `/issues/new`: Create mode (empty form)
-- If route is `/issues/:id/edit`: Edit mode (load issue data)
-- Use `useEffect` to fetch issue data if in edit mode
+- Uses `useIssueForm()` hook for form state
+- Uses `useNavigate()` for navigation
 - Form fields: title (required), description (required), status (dropdown)
-- Form validation:
-  - Title: required, min 1 char, max 200 chars
-  - Description: required, max 5000 chars
-  - Status: "open" or "closed"
 - **Save button**: 
-  - Calls `createIssue(issueData)` or `updateIssue(id, issueData)`
-  - On success: Navigate back to `/issues` (list page)
-  - Show success message
-- **Delete button** (only shown in edit mode):
-  - Shows confirmation dialog before deleting
-  - Calls `deleteIssue(id)`
-  - On success: Navigate back to `/issues` (list page)
-  - Show success message
-- **Back/Cancel button**: 
-  - Navigate back to `/issues` (list page)
-- Display validation errors
-- Loading state during submission (use context `loading` state)
-- Show page title: "Create New Issue" or "Edit Issue #:id"
+  - Calls `handleCreate()` from hook
+  - On success: Navigates to `/issues/:id` (show page)
+- **Cancel button**: 
+  - Navigates back to `/issues` (list page)
+- Display validation errors (from backend)
+- Loading state during submission
+- Page title: "Create Issue"
 
-#### 3.3.3 Issue Item Component
+**Components Used:**
+- `IssueForm`: Reusable form component
+- `TextField`, `TextAreaField`, `SelectField`: Form field components
+- `LoadingSpinner`: Loading indicator
+- `ErrorMessage`: Error display
 
-**File**: `frontend/src/components/IssueItem.jsx`
+#### 3.3.3 Edit Issue Page
+
+**File**: `frontend/src/pages/EditIssuePage.jsx`
 
 Features:
-- Reusable component for displaying a single issue in the list
-- Display: title, description (truncated), status badge, created_at
-- Clickable card/row → navigates to `/issues/:id/edit` route
-- Status badge with visual indicator (color-coded: open/closed)
+- Uses `useIssueShow()` hook to fetch issue data
+- Uses `useIssueForm()` hook for form state
+- Uses `useParams()` to get issue ID from route
+- Uses `useEffect` to fetch issue data on mount
+- Uses `useEffect` to initialize form when issue data loads
+- Form fields: title (required), description (required), status (dropdown)
+- **Save button**: 
+  - Calls `handleUpdate(id)` from hook (only sends changed fields)
+  - On success: Navigates to `/issues/:id` (show page)
+- **Delete button**: 
+  - Shows confirmation dialog
+  - Calls `handleDelete(id)` from `useIssueShow` hook
+  - On success: Navigates to `/issues` (list page)
+- **Cancel button**: 
+  - Navigates back to `/issues/:id` (show page)
+- Display validation errors (from backend)
+- Loading states for both fetching and submitting
+- Page title: "Edit Issue"
+
+**Components Used:**
+- `IssueForm`: Reusable form component
+- `TextField`, `TextAreaField`, `SelectField`: Form field components
+- `LoadingSpinner`: Loading indicator
+- `ErrorMessage`: Error display
+
+#### 3.3.4 Show Issue Page
+
+**File**: `frontend/src/pages/ShowIssuePage.jsx`
+
+Features:
+- Uses `useIssueShow()` hook to fetch issue data
+- Uses `useParams()` to get issue ID from route
+- Displays issue in read-only format
+- Shows: title, description, status, created_at, updated_at (formatted)
+- **Edit button**: Navigates to `/issues/:id/edit`
+- **Delete button**: 
+  - Shows confirmation dialog
+  - Calls `handleDelete(id)` from hook
+  - On success: Navigates to `/issues` (list page)
+- **Back button**: Navigates to `/issues` (list page)
+- Loading spinner while fetching
+- Error message display
+- Page title: "Issue #{id}"
+
+**Components Used:**
+- `LoadingSpinner`: Loading indicator
+- `ErrorMessage`: Error display
+
+#### 3.3.5 Reusable Components
+
+**Form Components** (`frontend/src/components/formFields/`):
+- `TextField.jsx`: Text input with label and error display
+- `TextAreaField.jsx`: Textarea with label and error display
+- `SelectField.jsx`: Select dropdown with label and error display
+
+**List Components**:
+- `IssueList.jsx`: Container for list of issues
+- `IssueCard.jsx`: Individual issue card (clickable, shows title, description, status, date)
+- `IssueFilters.jsx`: Filter and sort controls
+
+**Utility Components**:
+- `IssueForm.jsx`: Reusable form component (used by Create and Edit pages)
+- `LoadingSpinner.jsx`: Loading indicator
+- `ErrorMessage.jsx`: Error message display with dismiss
+- `Pagination.jsx`: Pagination controls
+- `PaginationInfo.jsx`: Pagination metadata display
 
 
 ### 3.4 Routing Setup
@@ -241,20 +397,24 @@ Features:
 **File**: `frontend/src/App.jsx`
 
 Features:
-- Wrap entire app with `<IssuesProvider>` component
 - Set up React Router with `BrowserRouter`
 - Define routes:
+  - `/` → Redirects to `/issues`
   - `/issues` → `IssueListPage` (default/main page)
-  - `/issues/new` → `IssueFormPage` (create mode)
-  - `/issues/:id/edit` → `IssueFormPage` (edit mode)
+  - `/issues/new` → `CreateIssuePage` (create mode)
+  - `/issues/:id` → `ShowIssuePage` (read-only view)
+  - `/issues/:id/edit` → `EditIssuePage` (edit mode)
+  - `*` → Redirects to `/issues` (404 fallback)
 - Use `Routes` and `Route` components from react-router-dom
-- Optional: Add 404 route for unknown paths
-
+- No Context Provider wrapper needed (hooks manage their own state)
 
 **File Structure:**
 - App.jsx handles routing configuration
 - Pages are in `frontend/src/pages/`
 - Components are in `frontend/src/components/`
+- Hooks are in `frontend/src/hooks/`
+- Services are in `frontend/src/services/`
+- Utils are in `frontend/src/utils/`
 
 ### 3.5 Main App Component Layout
 
@@ -270,11 +430,11 @@ Features:
 
 ### 3.6 Utility Functions
 
-**File**: `frontend/src/utils/dateUtils.js` (optional)
+**File**: `frontend/src/utils/dateTimeUtils.js`
 
 Functions:
-- `formatTimestamp(timestamp)` - Convert Unix timestamp to readable date
-- `formatDate(date)` - Format date string
+- `formatDate(timestamp)` - Convert Unix timestamp to readable date
+- `formatDateTime(timestamp)` - Convert Unix timestamp to readable date and time
 
 ### 3.7 Error Handling & User Feedback
 
@@ -343,43 +503,61 @@ Functions:
 
 ## File Structure Summary
 
-### Backend Files to Create/Modify:
+### Backend Files Structure:
 
 ```
 backend/
 ├── app/
 │   ├── models/
-│   │   └── issue.py                    # NEW: Issue SQLAlchemy model
+│   │   ├── base.py
+│   │   └── issue.py
 │   ├── schemas/
-│   │   └── issue.py                    # NEW: Issue Pydantic schemas
+│   │   ├── base.py
+│   │   └── issue.py
 │   ├── api/
 │   │   └── v1/
 │   │       └── endpoints/
-│   │           └── issues.py          # NEW: Issue API endpoints
-│   └── main.py                         # MODIFY: Include issues router
+│   │           └── issues.py
+│   ├── database.py
+│   ├── config.py
+│   └── main.py
 └── alembic/
     └── versions/
-        └── XXXX_create_issues_table.py # NEW: Migration file
+        └── XXXX_create_issues_table.py
 ```
 
-### Frontend Files to Create:
+### Frontend Files Structure:
 
 ```
 frontend/
 ├── src/
 │   ├── components/
-│   │   ├── IssueItem.jsx               # Reusable issue card component
-│   │   └── Layout.jsx                  # Common layout wrapper
+│   │   ├── formFields/
+│   │   │   ├── TextField.jsx
+│   │   │   ├── TextAreaField.jsx
+│   │   │   └── SelectField.jsx
+│   │   ├── IssueCard.jsx
+│   │   ├── IssueList.jsx
+│   │   ├── IssueForm.jsx
+│   │   ├── IssueFilters.jsx
+│   │   ├── Pagination.jsx
+│   │   ├── PaginationInfo.jsx
+│   │   ├── LoadingSpinner.jsx
+│   │   └── ErrorMessage.jsx
 │   ├── pages/
-│   │   ├── IssueListPage.jsx           # Main list page (route: /issues)
-│   │   └── IssueFormPage.jsx           # Form page (routes: /issues/new, /issues/:id/edit)
-│   ├── context/
-│   │   └── IssuesContext.jsx           # Context API for state management
+│   │   ├── IssueListPage.jsx
+│   │   ├── CreateIssuePage.jsx
+│   │   ├── ShowIssuePage.jsx
+│   │   └── EditIssuePage.jsx
+│   ├── hooks/
+│   │   ├── useIssueList.js
+│   │   ├── useIssueForm.js
+│   │   └── useIssueShow.js
 │   ├── services/
-│   │   └── issues.js                   # Issue API service
+│   │   └── issues.js
 │   ├── utils/
-│   │   └── dateUtils.js                # Date utilities
-│   └── App.jsx                         # Routing setup + IssuesProvider
+│   │   └── dateTimeUtils.js
+│   └── App.jsx
 ```
 
 ---
@@ -387,39 +565,50 @@ frontend/
 ## Implementation Order
 
 1. **Database & Model** (Backend foundation)
-   - Create Issue model
+   - Create BaseModel with timestamps
+   - Create Issue model with IssueStatus enum
    - Create Alembic migration
    - Run migration
 
 2. **Backend API** (API layer)
-   - Create Pydantic schemas
-   - Implement API endpoints
-   - Test endpoints with FastAPI docs
+   - Create base schemas (BaseSchema, TimestampSchema)
+   - Create Issue Pydantic schemas with validation
+   - Implement API endpoints (with pagination)
+   - Register router in `main.py`
+   - Test endpoints with FastAPI docs at `/docs`
 
 3. **Frontend Service** (API integration)
-   - Create issues service functions
+   - Create issues service functions (with pagination support)
    - Test service functions
 
-4. **Frontend Context** (State management)
-   - Create IssuesContext with provider
-   - Implement state and functions
-   - Create useIssues custom hook
+4. **Frontend Hooks** (State management)
+   - Create useIssueList hook (with URL param sync)
+   - Create useIssueForm hook (with validation error mapping)
+   - Create useIssueShow hook
 
 5. **Frontend Routing** (Navigation)
    - Set up React Router in App.jsx
-   - Define routes: /issues, /issues/new, /issues/:id/edit
-   - Wrap app with IssuesProvider
+   - Define routes: /issues, /issues/new, /issues/:id, /issues/:id/edit
 
-6. **Frontend Pages** (UI layer)
-   - Create IssueListPage (main page with list)
-   - Create IssueFormPage (create/edit form)
-   - Create IssueItem component (reusable)
+6. **Frontend Components** (UI layer)
+   - Create reusable form field components
+   - Create IssueCard, IssueList, IssueFilters components
+   - Create Pagination components
+   - Create LoadingSpinner, ErrorMessage components
+   - Create IssueForm reusable component
+
+7. **Frontend Pages** (UI layer)
+   - Create IssueListPage (with filters and pagination)
+   - Create CreateIssuePage
+   - Create ShowIssuePage
+   - Create EditIssuePage
    - Add navigation between pages
 
-7. **Integration & Testing** (End-to-end)
+8. **Integration & Testing** (End-to-end)
    - Test full workflow with routing
    - Test navigation between pages
    - Test create, edit, delete flows
+   - Test pagination and filtering
    - Fix any issues
    - Polish UI/UX
 
@@ -428,12 +617,16 @@ frontend/
 ## Success Criteria
 
 ✅ Users can create issues with title, description, and status  
-✅ Users can view a list of all issues  
-✅ Users can update existing issues  
+✅ Users can view a list of all issues with pagination  
+✅ Users can filter issues by status (open/closed)  
+✅ Users can sort issues by creation date (asc/desc)  
+✅ Users can view a single issue (read-only page)  
+✅ Users can update existing issues (partial updates)  
 ✅ Users can delete issues  
-✅ Form validation works (title required, status enum)  
+✅ Form validation works (backend validation with field-level error display)  
 ✅ Loading states are shown during API calls  
 ✅ Error states are handled and displayed  
+✅ URL params sync with filters and pagination  
 ✅ Database has proper indexes on status and created_at  
 ✅ All CRUD operations persist correctly  
 
@@ -442,37 +635,67 @@ frontend/
 ## UI Workflow & Optimizations
 
 ### Workflow:
-1. **Main Page (`/issues`)**: Displays list of all issues
-2. **Click Issue**: Navigates to `/issues/:id/edit` route
-3. **Form Page**: Shows form with issue data, Save button, Delete button
-4. **Create New**: Click "Create Issue" button → Navigates to `/issues/new`
-5. **After Save/Delete**: Redirects back to `/issues` list page
+1. **Main Page (`/issues`)**: Displays paginated list of issues with filters
+2. **Click Issue Card**: Navigates to `/issues/:id` (show page)
+3. **Show Page**: Read-only view with Edit and Delete buttons
+4. **Edit Button**: Navigates to `/issues/:id/edit` (edit page)
+5. **Create New**: Click "Create Issue" button → Navigates to `/issues/new`
+6. **After Create**: Redirects to `/issues/:id` (show page)
+7. **After Update**: Redirects to `/issues/:id` (show page)
+8. **After Delete**: Redirects to `/issues` (list page)
 
-### Optimizations Added:
+### Optimizations Implemented:
 ✅ **URL-based routing** - Clean URLs, bookmarkable pages, browser back/forward support  
+✅ **Pagination** - 20 items per page with navigation controls  
+✅ **Filtering** - Filter by status (open/closed) with URL param sync  
+✅ **Sorting** - Sort by creation date (asc/desc) with URL param sync  
+✅ **URL param synchronization** - Filters and pagination preserved in URL  
+✅ **Separate show page** - Read-only view before editing  
 ✅ **Create button on list page** - Easy access to create new issues  
-✅ **Back/Cancel button** - Easy navigation back to list  
-✅ **Auto-redirect after operations** - Better UX, user sees updated list immediately  
+✅ **Back/Cancel buttons** - Easy navigation  
+✅ **Auto-redirect after operations** - Better UX flow  
 ✅ **Delete confirmation** - Prevents accidental deletions  
-✅ **Success/error feedback** - Clear user communication  
+✅ **Error feedback** - Field-level and general error messages  
 ✅ **Loading states** - Visual feedback during operations  
-✅ **Route-based mode detection** - Form knows if it's create or edit mode from URL  
-✅ **Optional: Unsaved changes warning** - Prevent data loss (enhancement)
+✅ **Change detection** - Only sends changed fields on update  
+✅ **Backend validation** - Server-side validation with field-level error mapping
 
 ### Additional Optimization Ideas (Optional):
 - **Optimistic updates**: Update UI immediately, rollback on error
-- **Caching**: Store fetched issues in context to avoid refetching
-- **Pagination**: For large lists (if needed in future)
-- **Search/Filter**: On list page (if needed in future)
+- **Search functionality**: Search issues by title/description
 - **Breadcrumbs**: Show navigation path
+- **Unsaved changes warning**: Prevent data loss on navigation
 
-## Notes
+## Architecture Notes
 
-- Unix timestamps: Use `int(time.time())` in Python, `Math.floor(Date.now() / 1000)` in JavaScript
-- Status enum: Strictly "open" or "closed" (case-sensitive)
-- Form validation: Client-side for UX, server-side for security
-- Error handling: Always provide user-friendly error messages
-- State Management: Using React Context API to avoid prop drilling and centralize state
-- Context Optimization: Use `useCallback` for context functions and `useMemo` for computed values to prevent unnecessary re-renders
-- Routing: Using React Router DOM (already installed) for navigation between pages
-- URL Structure: `/issues` (list), `/issues/new` (create), `/issues/:id/edit` (edit)
+### State Management
+- **Custom Hooks Architecture**: Each feature uses its own hook
+- **Localized State**: Each hook manages its own state (no shared global state)
+- **Direct Service Calls**: Hooks call service functions directly
+- **Benefits**: Simpler architecture, clearer data flow, easier testing, better performance
+
+### Backend Architecture
+- **BaseModel Pattern**: Common fields (id, created_at, updated_at) in BaseModel
+- **Enum-based Status**: IssueStatus enum for type safety
+- **Base Schemas**: Reusable BaseSchema and TimestampSchema
+- **Pagination**: Built-in pagination (20 items per page)
+- **Field Validation**: Text stripping and validation in Pydantic validators
+
+### Frontend Architecture
+- **Component Composition**: Reusable form fields, IssueForm, IssueCard, etc.
+- **Hook-based State**: useIssueList, useIssueForm, useIssueShow
+- **URL State Sync**: Filters and pagination synced with URL params
+- **Error Handling**: Field-level error mapping from backend 422 responses
+
+## Technical Notes
+
+- **Unix timestamps**: Generated server-side using PostgreSQL `EXTRACT(EPOCH FROM NOW())
+- **Status enum**: IssueStatus.OPEN | IssueStatus.CLOSED (type-safe)
+- **Form validation**: Backend-only (Pydantic), errors mapped to field-level display
+- **Error handling**: User-friendly error messages with field-level validation feedback
+- **Routing**: React Router DOM with BrowserRouter
+- **URL Structure**: 
+  - `/issues` (list)
+  - `/issues/new` (create)
+  - `/issues/:id` (show)
+  - `/issues/:id/edit` (edit)
