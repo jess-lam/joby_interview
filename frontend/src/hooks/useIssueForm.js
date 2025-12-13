@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import * as issuesService from '../services/issues'
 
 /**
@@ -34,6 +34,14 @@ export const useIssueForm = (initialValues = {}) => {
     description: null,
     status: null
   })
+
+  const hasChanges = useMemo(() => {
+    const titleChanged = formValues.title.trim() !== originalValues.title.trim()
+    const descriptionChanged = formValues.description.trim() !== originalValues.description.trim()
+    const statusChanged = formValues.status !== originalValues.status
+    
+    return titleChanged || descriptionChanged || statusChanged
+  }, [formValues, originalValues])
 
   const clearError = useCallback(() => {
     setError(null)
@@ -219,6 +227,7 @@ export const useIssueForm = (initialValues = {}) => {
     fieldErrors,
     loading,
     error,
+    hasChanges,
     
     // Functions
     handleFieldChange,

@@ -24,6 +24,7 @@ const EditIssuePage = () => {
     fieldErrors,
     loading: submitting,
     error: submitError,
+    hasChanges,
     handleFieldChange,
     handleUpdate,
     initializeFromValues,
@@ -125,7 +126,7 @@ const EditIssuePage = () => {
         <button
           type="button"
           onClick={handleSave}
-          disabled={submitting || fetching}
+          disabled={submitting || fetching || !hasChanges}
           className="edit-issue-page__save-btn"
         >
           {submitting ? 'Saving...' : 'Save'}
