@@ -231,11 +231,6 @@ npm test -- --grep "IssueCard"
 npm run test:watch -- --ui
 ```
 
-**Writing Tests:**
-- Use `renderWithRouter()` from `src/tests/testUtils.jsx` for components that use routing
-- Use test data from `src/tests/testData.js` for test data
-- MSW automatically mocks all API calls - no manual mocking needed
-
 ## Environment Variables
 
 See `.env.example` files in `backend/` directory for required environment variables.
