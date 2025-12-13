@@ -53,4 +53,5 @@ export function createMockNavigate() {
   return vi.fn()
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export * from '@testing-library/react'

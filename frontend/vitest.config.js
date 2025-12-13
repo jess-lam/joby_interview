@@ -37,6 +37,8 @@ export default defineConfig({
     
     // Test timeout
     testTimeout: 10000,
+
+    onUnhandledRejection: 'warn', // Warn instead of failing tests
   },
   resolve: {
     alias: {

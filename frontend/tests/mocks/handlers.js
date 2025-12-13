@@ -29,7 +29,7 @@ export {
  */
 
 // GET /api/v1/issues - List issues with pagination, filtering, and sorting
-export const listIssuesHandler = http.get('/api/v1/issues', ({ request }) => {
+export const listIssuesHandler = http.get('*/api/v1/issues', ({ request }) => {
   const params = parseQueryParams(request.url)
   let issues = getIssuesFromStore()
 
@@ -50,7 +50,7 @@ export const listIssuesHandler = http.get('/api/v1/issues', ({ request }) => {
 })
 
 // GET /api/v1/issues/:id - Get single issue
-export const getIssueHandler = http.get('/api/v1/issues/:id', ({ params }) => {
+export const getIssueHandler = http.get('*/api/v1/issues/:id', ({ params }) => {
   const id = parseInt(params.id, 10)
   const issue = findIssue(id)
 
@@ -65,7 +65,7 @@ export const getIssueHandler = http.get('/api/v1/issues/:id', ({ params }) => {
 })
 
 // POST /api/v1/issues - Create issue
-export const createIssueHandler = http.post('/api/v1/issues', async ({ request }) => {
+export const createIssueHandler = http.post('*/api/v1/issues', async ({ request }) => {
   const body = await request.json()
   const { title, description, status = 'open' } = body
 
@@ -79,7 +79,7 @@ export const createIssueHandler = http.post('/api/v1/issues', async ({ request }
 })
 
 // PATCH /api/v1/issues/:id - Update issue
-export const updateIssueHandler = http.patch('/api/v1/issues/:id', async ({ params, request }) => {
+export const updateIssueHandler = http.patch('*/api/v1/issues/:id', async ({ params, request }) => {
   const id = parseInt(params.id, 10)
   const issueIndex = findIssueIndex(id)
 
@@ -104,7 +104,7 @@ export const updateIssueHandler = http.patch('/api/v1/issues/:id', async ({ para
 })
 
 // DELETE /api/v1/issues/:id - Delete issue
-export const deleteIssueHandler = http.delete('/api/v1/issues/:id', ({ params }) => {
+export const deleteIssueHandler = http.delete('*/api/v1/issues/:id', ({ params }) => {
   const id = parseInt(params.id, 10)
   const deleted = deleteIssue(id)
 
